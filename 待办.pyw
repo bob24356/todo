@@ -100,6 +100,12 @@ def play_():
         except Exception as e:
             messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
 
+def stop_():
+    global isplay, ispaused
+    music.stop()
+    ispaused = False
+    isplay = False
+
 def pause_():
     global ispaused, isplay
     if isplay and not ispaused:
@@ -160,9 +166,10 @@ scrollbar = Scrollbar(window, bootstyle="round")
 listbox = Listbox(window,yscrollcommand=scrollbar.set,width=40,height=9,font=("微软雅黑", 10),bg="#2b2b2b",fg="white",selectbackground="#0066cc",selectmode='multiple')
 scrollbar.config(command=listbox.yview)
 start = Button(window,text='开始',padding=(10, 2),command=play_)
-stop = Button(window,text='暂停',padding=(10, 2),command=pause_)
+pause = Button(window,text='暂停',padding=(10, 2),command=pause_)
+stop = Button(window,text='停止',padding=(10, 2),command=stop_)
 music_load_btn = Button(window,text='导入音乐',padding=(10, 2),command=open_music)
-volume_scale = Scale(window, from_=0, to=100, orient = 'vertical', length=200, bg="#f0f0f0",command=volume)
+volume_scale = Scale(window, from_=0, to=100, orient = 'vertical', length=180, bg="#f0f0f0",command=volume)
 volume_scale.set(70)  # 默认音量
 l1 = Label(window,text='0%')
 l2 = Label(window,text='100%')
@@ -179,9 +186,10 @@ task_created.place(x=220, y=60)
 delete.place(x=220, y=10)
 open_.place(x=310, y=10)
 save_.place(x=310, y=60)
-start.place(x=390, y=220)
-stop.place(x=390, y=260)
+start.place(x=390, y=195)
+pause.place(x=390, y=225)
+stop.place(x=390, y=255)
 l1.place(x=420, y=5)
-l2.place(x=420, y=190)
+l2.place(x=420, y=160)
 
 window.mainloop()
