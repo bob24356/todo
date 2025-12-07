@@ -1,12 +1,19 @@
-from tkinter import Tk,END,Listbox,messagebox,filedialog,Scale
+from tkinter import Tk, END, Listbox, messagebox, filedialog, Scale, Label
 from ttkbootstrap import Button,Text,Scrollbar
 from warnings import filterwarnings # 警告处理库
 from datetime import datetime
 from pygame.mixer import init
 from pygame.mixer import music
+
 filterwarnings('ignore')
 value = ''
 init()
+window = Tk()
+window.geometry('470x320')  # 设置窗口大小
+window.title('待办')  # 设置窗口标题
+window.attributes('-topmost', True)
+window.resizable(False, False)
+window.iconbitmap('favicon.ico')
 
 isplay = False
 ispaused = False
@@ -30,6 +37,23 @@ def open_file():
         except Exception as e:
             messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
 
+def open_music():
+    global listbox
+    global music_load
+    music_load = ""
+    # 打开文件对话框
+    file_path = filedialog.askopenfilename(
+        title="选择音乐",
+        filetypes=[
+            ("mp3文件", "*.mp3")
+        ]
+    )
+
+    if file_path:  # 用户选择了文件
+        try:
+            music_load = file_path
+        except Exception as e:
+            messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
 
 def save_file():
     global listbox
@@ -62,16 +86,19 @@ def save_file():
             messagebox.showerror("错误", f"保存失败:\n{str(e)}")
 
 def play_():
-    global isplay, ispaused
+    global isplay, ispaused,music_load
     if ispaused:
         music.unpause()
         ispaused = False
         isplay = True
     else:
-        music.load('music.mp3')
-        music.play(loops=-1)
-        ispaused = False
-        isplay = True
+        try:
+            music.load(music_load)
+            music.play(loops=-1)
+            ispaused = False
+            isplay = True
+        except Exception as e:
+            messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
 
 def pause_():
     global ispaused, isplay
@@ -120,12 +147,7 @@ def volume(val):
     global volume_scale
     music.set_volume(volume_)
 
-window = Tk()
-window.geometry('470x290')  # 设置窗口大小
-window.title('待办')  # 设置窗口标题
-window.attributes('-topmost', True)
-window.resizable(False, False)
-window.iconbitmap('favicon.ico')
+
 task_high = Button(window,text='高等级',padding=(10, 5),command=high)
 task_mid = Button(window,text='中等级',padding=(10, 5),command=mid)
 task_low = Button(window,text='低等级',padding=(10, 5),command=low)
@@ -139,10 +161,13 @@ listbox = Listbox(window,yscrollcommand=scrollbar.set,width=40,height=9,font=("�
 scrollbar.config(command=listbox.yview)
 start = Button(window,text='开始',padding=(10, 2),command=play_)
 stop = Button(window,text='暂停',padding=(10, 2),command=pause_)
+music_load_btn = Button(window,text='导入音乐',padding=(10, 2),command=open_music)
 volume_scale = Scale(window, from_=0, to=100, orient = 'vertical', length=200, bg="#f0f0f0",command=volume)
 volume_scale.set(70)  # 默认音量
+l1 = Label(window,text='0%')
+l2 = Label(window,text='100%')
 
-
+music_load_btn.place(x=360, y=290)
 volume_scale.place(x=390, y=10)
 scrollbar.place(x=360,y=100,width=15, height=190)
 listbox.place(x=10,y=100)
@@ -156,6 +181,7 @@ open_.place(x=310, y=10)
 save_.place(x=310, y=60)
 start.place(x=390, y=220)
 stop.place(x=390, y=260)
-
+l1.place(x=420, y=5)
+l2.place(x=420, y=190)
 
 window.mainloop()
