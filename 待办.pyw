@@ -1,30 +1,34 @@
 from tkinter import Tk, END, messagebox, filedialog, Scale, Label
-from ttkbootstrap import Button, Text, Scrollbar, Treeview, Style
+from ttkbootstrap import Button, Text, Scrollbar, Treeview
 from warnings import filterwarnings
 from datetime import datetime
 from pygame.mixer import init
-from pygame.mixer import music
-filterwarnings('ignore')
+from pygame.mixer import music#导入库
+#——————————————————————————————————————————————————————————————————————
+filterwarnings('ignore')#取消警告
 value = ''
-init()
+status = True
+isplay = False
+ispaused = False
+init()#初始化变量
 window = Tk()
-window.geometry('550x350')
-window.title('待办')
+window.geometry('450x320')
 window.attributes('-topmost', True)
+window.title('待办')
 window.resizable(False, False)
 try:
     window.iconbitmap('favicon.ico')
 except:
-    pass
+    pass#创建窗口
 
+#——————————————————————————————————————————————————————————————————————
 # 定义优先级颜色
 PRIORITY_INFO = {
     '高等级': {'color': '#ffcccc', 'order': 3},  # 浅红色，最高优先级
     '中等级': {'color': '#ffffcc', 'order': 2},  # 浅黄色，中等优先级
     '低等级': {'color': '#ccffcc', 'order': 1},  # 浅绿色，最低优先级
 }
-isplay = False
-ispaused = False
+
 def open_file():
     # 打开文件对话框
     file_path = filedialog.askopenfilename(
@@ -60,7 +64,7 @@ def open_file():
 
         except Exception as e:
             messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
-
+#打开待办
 def open_music():
     global music_load
     music_load = ""
@@ -77,7 +81,7 @@ def open_music():
             music_load = file_path
         except Exception as e:
             messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
-
+#打开音乐
 def save_file():
     # 打开保存文件对话框
     default_name = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')}.txt"
@@ -107,7 +111,7 @@ def save_file():
             messagebox.showinfo("成功", "文件保存成功！")
         except Exception as e:
             messagebox.showerror("错误", f"保存失败:\n{str(e)}")
-
+#保存待办
 def play_():
     global isplay, ispaused, music_load
     if ispaused:
@@ -122,20 +126,20 @@ def play_():
             isplay = True
         except Exception as e:
             messagebox.showerror("错误", f"无法打开文件:\n{str(e)}")
-
+#播放音乐
 def stop_():
     global isplay, ispaused
     music.stop()
     ispaused = False
     isplay = False
-
+#停止播放音乐
 def pause_():
     global ispaused, isplay
     if isplay and not ispaused:
         music.pause()
         ispaused = True
         isplay = False
-
+#暂停音乐
 def high():
     global value
     value = '高等级'
@@ -147,7 +151,7 @@ def mid():
 def low():
     global value
     value = '低等级'
-
+#定义优先级
 def delete_selected():
     selected_items = treeview.selection()
 
@@ -159,11 +163,11 @@ def delete_selected():
     if messagebox.askyesno("确认", f"确定要删除选中的 {len(selected_items)} 个项目吗？"):
         for item in selected_items:
             treeview.delete(item)
-
+#删除项
 def sort_tasks_by_priority(tasks):
     """按优先级排序任务列表"""
     return sorted(tasks, key=lambda x: PRIORITY_INFO.get(x[1], {'order': 0})['order'], reverse=True)
-
+#排序任务列表
 def add_task_to_treeview(task_text, priority):
     """向Treeview中添加任务并设置颜色"""
     item_id = treeview.insert('', 'end', values=(task_text, priority))
@@ -173,7 +177,7 @@ def add_task_to_treeview(task_text, priority):
     color = color_info['color']
     treeview.tag_configure(priority, background=color)
     treeview.item(item_id, tags=(priority,))
-
+#添加任务1
 def selected():
     global value
     task_text = task_create.get('1.0', END).strip()
@@ -191,7 +195,7 @@ def selected():
 
     # 重新按优先级排序所有任务
     resort_tasks()
-
+#添加任务2
 def resort_tasks():
     """重新按优先级排序Treeview中的所有任务"""
     # 获取所有任务
@@ -209,15 +213,14 @@ def resort_tasks():
     sorted_tasks = sort_tasks_by_priority(tasks)
     for task_text, priority in sorted_tasks:
         add_task_to_treeview(task_text, priority)
-
-def volume(val):
-    volume_ = float(val) / 100
-    music.set_volume(volume_)
+#重新按优先级排序
 
 def sort_by_priority():
     """按优先级排序按钮"""
     resort_tasks()
     messagebox.showinfo("提示", "已按优先级排序")
+#按优先级排序（调用）
+
 
 def sort_by_task():
     """按任务名称排序按钮"""
@@ -240,7 +243,22 @@ def sort_by_task():
         add_task_to_treeview(task_text, priority)
 
     messagebox.showinfo("提示", "已按任务名称排序")
-
+#按任务名称排序
+def attribute():
+    global status,window,attributes
+    if not status:
+        window.attributes('-topmost', True)
+        attributes['text'] = '取消置顶'
+    elif status:
+        window.attributes('-topmost', False)
+        attributes['text'] = '置顶'
+    status = not status
+#置顶功能
+def volume(val):
+    volume_ = float(val) / 100
+    music.set_volume(volume_)
+#调节音量
+#——————————————————————————————————————————————————————————————————————
 # 创建Treeview（两列列表）
 columns = ('任务', '优先级')
 treeview = Treeview(window, columns=columns, show='headings', height=9, selectmode='extended')
@@ -264,9 +282,9 @@ scrollbar.config(command=treeview.yview)
 task_high = Button(window, text='高等级', padding=(10, 5), command=high)
 task_mid = Button(window, text='中等级', padding=(10, 5), command=mid)
 task_low = Button(window, text='低等级', padding=(10, 5), command=low)
-open_ = Button(window, text='打开', padding=(20, 5), command=open_file, bootstyle='info')
-save_ = Button(window, text='保存', padding=(20, 5), command=save_file, bootstyle='info')
-task_create = Text(window, width=35, height=1)
+open_ = Button(window, text='打开', padding=(11, 5), command=open_file, bootstyle='info')
+save_ = Button(window, text='保存', padding=(11, 5), command=save_file, bootstyle='info')
+task_create = Text(window, width=25, height=1)
 task_created = Button(window, text='创建', padding=(15, 5), command=selected, bootstyle='success')
 delete = Button(window, text='删除', padding=(15, 5), command=delete_selected, bootstyle='danger')
 start = Button(window, text='开始', padding=(10, 2), command=play_)
@@ -274,7 +292,8 @@ pause = Button(window, text='暂停', padding=(10, 2), command=pause_)
 stop = Button(window, text='停止', padding=(10, 2), command=stop_)
 music_load_btn = Button(window, text='导入音乐', padding=(10, 2), command=open_music)
 volume_scale = Scale(window, from_=0, to=100, orient='vertical', length=180, bg="#f0f0f0", command=volume)
-volume_scale.set(70)  # 默认音量
+volume_scale.set(30)  # 默认音量
+attributes = Button(window,text='取消置顶', padding=(10, 2), command=attribute,  bootstyle='warning')
 l1 = Label(window, text='0%')
 l2 = Label(window, text='100%')
 
@@ -283,23 +302,24 @@ sort_priority_btn = Button(window, text='按优先级排序', padding=(10, 2), c
 sort_task_btn = Button(window, text='按名称排序', padding=(10, 2), command=sort_by_task, bootstyle='warning')
 
 # 布局控件
-music_load_btn.place(x=440, y=310)
-volume_scale.place(x=470, y=10)
-scrollbar.place(x=440, y=100, width=15, height=190)
+music_load_btn.place(x=370, y=285)
+volume_scale.place(x=370, y=10)
+scrollbar.place(x=350, y=100, width=15, height=190)
 treeview.place(x=10, y=100)
 task_high.place(x=10, y=10)
 task_mid.place(x=80, y=10)
 task_low.place(x=150, y=10)
 task_create.place(x=10, y=60)
-task_created.place(x=270, y=60)
+task_created.place(x=220, y=60)
 delete.place(x=220, y=10)
-open_.place(x=370, y=10)
-save_.place(x=370, y=60)
-start.place(x=470, y=195)
-pause.place(x=470, y=225)
-stop.place(x=470, y=255)
-l1.place(x=500, y=5)
-l2.place(x=500, y=160)
-sort_priority_btn.place(x=10, y=310)
-sort_task_btn.place(x=120, y=310)
-window.mainloop()
+open_.place(x=290, y=10)
+save_.place(x=290, y=60)
+start.place(x=370, y=195)
+pause.place(x=370, y=225)
+stop.place(x=370, y=255)
+l1.place(x=390, y=5)
+l2.place(x=390, y=160)
+sort_priority_btn.place(x=10, y=290)
+sort_task_btn.place(x=120, y=290)
+attributes.place(x=220, y=290)
+window.mainloop()#主循环
