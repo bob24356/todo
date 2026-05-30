@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QApplication, QLabel, QTreeWidget,
                                QMenu, QDialog, QRadioButton, QFileDialog,
                                QSlider)
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QAction
+from PySide6.QtGui import QColor, QAction, QIcon
 from pygame.mixer import init
 from pygame.mixer import music
 import json
@@ -126,6 +126,8 @@ class ToDo(QWidget):
         self.music_load = ""
 
         self.lineEdit = QLineEdit()
+
+        
 
         self.build()
         self.open_()
@@ -319,16 +321,6 @@ class ToDo(QWidget):
             item.setText(1, level)
             self.listWindow.scrollToItem(item)
 
-    def closeEvent(self, event):
-        try:
-            self.save()
-        except Exception as e:
-            QMessageBox.warning(self, "保存失败", f"保存数据时出错：{str(e)}")
-            event.ignore()
-            return
-
-        event.accept()
-
     def create_menu(self):
         self.listWindow.setContextMenuPolicy(Qt.CustomContextMenu)
         self.listWindow.customContextMenuRequested.connect(lambda pos: self.show_menu(self.listWindow, pos))
@@ -405,6 +397,34 @@ class ToDo(QWidget):
         volume_ = float(value) / 100
         music.set_volume(volume_)
 
+    def closeEvent(self, event):
+        reply = QMessageBox.question(
+            self,
+            '保存待办事项',
+            '是否保存当前待办事项到默认文件 (tasks.json)？',
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes
+        )
+        
+        if reply == QMessageBox.Yes:
+            tasks = {}
+            for i in range(self.listWindow.topLevelItemCount()):
+                item = self.listWindow.topLevelItem(i)
+                name = item.text(0)
+                level = item.text(1)
+                task_num = f'task{i + 1}'
+                tasks[task_num] = {'name': name, 'level': level}
+            try:
+                with open('tasks.json', 'w', encoding='utf-8') as f:
+                    json.dump(tasks, f, ensure_ascii=False)
+                event.accept()
+            except Exception as e:
+                QMessageBox.critical(self, "保存失败", f"无法保存文件：\n{e}")
+                event.ignore()
+        else:
+            event.accept()
+        
+
 class editDialog(QDialog):
     def __init__(self, item_name, item_level):
         super().__init__()
@@ -459,6 +479,7 @@ class editDialog(QDialog):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon('favicon.ico'))
     todo = ToDo()
     todo.show()
     sys.exit(app.exec())
