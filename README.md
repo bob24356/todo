@@ -8,7 +8,7 @@
 
 0.下载python3.14版本
 
-1.下载*todolist.pyw*
+1.下载*todolist.pyw、pocket.py*
 
 2.使用以下两条指令下载所需的库
 
@@ -17,7 +17,11 @@ pip install PySide6
 pip install pygame-ce
 ```
 
-3.双击打开
+***tip:***
+
+**所有用到的库：json、os、sys（python的标准库）、PySide6、pygame-ce**
+
+3.双击打开*todolist.pyw*
 
 ## 功能模块
 
@@ -128,15 +132,21 @@ PRIORITY_INFO = {
 
 ❌删除落后的txt版
 
+### **v1.3.0 (当前版本)**
+
+**新增功能**
+
+✅保存文件副本在tasks文件夹中
+
+✅撰写注释
+
+✅模块化
+
 ## 常见问题
 
 ### Q1: 音乐文件无法导入？
 
-A: 请检查音频文件是否为 MP3 格式。
-
-### Q2: 如何修改窗口大小？
-
-A: json版本可以自由调整
+A1: 请检查音频文件是否为 MP3 格式。
 
 *本项目采用 MIT 许可证 - 查看 LICENSE 文件了解详情。*
 
