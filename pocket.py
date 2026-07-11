@@ -22,6 +22,7 @@ class ToDo(QWidget):
             'mid': '#ffffcc',
             'low': '#ccffcc'
         }
+        self.top_value = True
 
         self.setWindowTitle('待办')
         self.setGeometry(300, 300, 600, 330)
@@ -30,6 +31,7 @@ class ToDo(QWidget):
         self.bGrid = QGridLayout()
         self.mGrid = QGridLayout()
         self.setLayout(self.mainGrid)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
         self.listWindow = QTreeWidget()
         self.listWindow.setColumnCount(2)
@@ -128,7 +130,8 @@ class ToDo(QWidget):
 
         self.lineEdit = QLineEdit()
 
-        
+        self.topPButton = QPushButton('取消置顶')
+        self.topPButton.clicked.connect(self.top)
 
         self.build()
         self.open_()
@@ -151,6 +154,7 @@ class ToDo(QWidget):
         self.bGrid.addWidget(self.openPButton, 6, 0)
         self.bGrid.addWidget(self.status_label, 7, 0)
         self.bGrid.addWidget(self.help, 8, 0)
+        self.bGrid.addWidget(self.topPButton,9,0)
         self.mGrid.addWidget(self.slider,0,0)
         self.mGrid.addWidget(self.openmPButton,1,0)
         self.mGrid.addWidget(self.startmPButton,2,0)
@@ -405,6 +409,33 @@ class ToDo(QWidget):
     def closeEvent(self, event):
         self.save()
     #save backup
+
+    def top(self):
+        handle = self.windowHandle()
+        
+        flags = handle.flags()
+        
+        if self.top_value:
+            flags &= ~Qt.WindowStaysOnTopHint
+            flags |= Qt.WindowCloseButtonHint
+            flags |= Qt.WindowMinimizeButtonHint
+            flags |= Qt.WindowMaximizeButtonHint
+            handle.setFlags(flags)
+            self.top_value = False
+            self.topPButton.setText('置顶')
+        else:
+            flags |= Qt.WindowStaysOnTopHint
+            flags |= Qt.WindowCloseButtonHint
+            flags |= Qt.WindowMinimizeButtonHint
+            flags |= Qt.WindowMaximizeButtonHint
+            handle.setFlags(flags)
+            self.top_value = True
+            self.topPButton.setText('取消置顶')
+        
+        new_flags = handle.flags()
+        
+        self.raise_()
+        self.activateWindow()
         
 
 class editDialog(QDialog):
