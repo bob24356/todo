@@ -193,7 +193,9 @@ PRIORITY_INFO = {
 A1: 请检查音频文件是否为 MP3 格式。
 
 本项目采用 **MIT 许可证** 开源。
+
 Copyright (c) 2026 Sibo Zhao
+
 详见本仓库 LICENSE文件。
 
 ---
