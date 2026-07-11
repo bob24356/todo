@@ -6,9 +6,21 @@
 
 ### 安装方式
 
+#### 如果你是使用者
+
+1.下载安装程序（todo_installer.exe）
+
+2.安装软件（弹安全警告是正常的，因为搞不到签名）
+
+3.双击使用
+
+#### 如果你是开发者
+
 0.下载python3.14版本
 
-1.下载*todolist.pyw、pocket.py*
+1.下载代码包
+
+2.解压文件
 
 2.使用以下两条指令下载所需的库
 
@@ -21,7 +33,7 @@ pip install pygame-ce
 
 **所有用到的库：json、os、sys（python的标准库）、PySide6、pygame-ce**
 
-3.双击打开*todolist.pyw*
+**其中*pocket.py*是包，*todolist.pyw*是运行文件**
 
 ## 功能模块
 
@@ -80,6 +92,32 @@ pip install pygame-ce
 - **GUI框架**：PySide6（现代化界面）
 - **音频处理**：Pygame.mixer（音频播放控制）
 
+## 第三方依赖版权声明
+
+本项目依赖以下库，特此声明并致谢：
+
+| 依赖库            | 协议     | 版权持有人                      |
+| -------------- | ------ | -------------------------- |
+| **PySide6**    | LGPLv3 | The Qt Company Ltd.        |
+| **pygame-ce**  | LGPLv3 | Pygame Community           |
+| **json** (标准库) | PSFL   | Python Software Foundation |
+| **os** (标准库)   | PSFL   | Python Software Foundation |
+| **sys** (标准库)  | PSFL   | Python Software Foundation |
+
+### 特别说明
+
+- **PySide6** 和 **pygame-ce** 采用 LGPLv3 协议，允许与本软件（MIT 协议）一起分发和使用。
+- 本软件未对上述库进行任何修改，仅作为普通调用。
+- 根据 LGPLv3 要求，使用者可自行替换这些库的版本或获取其源代码：
+  - PySide6: https://code.qt.io/cgit/pyside/pyside-setup.git/
+  - pygame-ce: https://github.com/pygame-community/pygame-ce
+
+### 完整协议文本
+
+- MIT 协议文本见本仓库 LICENSE 文件
+- LGPLv3 协议文本: https://www.gnu.org/licenses/lgpl-3.0.html
+- PSFL 协议文本: https://docs.python.org/3/license.html
+
 ## 自定义配置
 
 ### 修改主题颜色
@@ -124,15 +162,11 @@ PRIORITY_INFO = {
 
 **新增功能**
 
-✅json文件保存+PySide6库重置
-
-✅编辑已创建任务
-
 ✅不再总是保存文件
 
 ❌删除落后的txt版
 
-### **v1.3.0**
+### v1.3.0
 
 **新增功能**
 
@@ -142,11 +176,15 @@ PRIORITY_INFO = {
 
 ✅模块化
 
-### **v1.4.0 (当前版本)**
+### v1.4.0
 
 **新增功能**
 
 ✅窗口置顶
+
+### v1.4.1 (当前版本)
+
+✅封了一个exe安装程序
 
 ## 常见问题
 
@@ -154,7 +192,9 @@ PRIORITY_INFO = {
 
 A1: 请检查音频文件是否为 MP3 格式。
 
-*本项目采用 MIT 许可证 - 查看 LICENSE 文件了解详情。*
+本项目采用 **MIT 许可证** 开源。
+Copyright (c) 2026 Sibo Zhao
+详见本仓库 LICENSE文件。
 
 ---
 

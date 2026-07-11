@@ -8,7 +8,7 @@ from PySide6.QtGui import QColor, QAction
 from pygame.mixer import init
 from pygame.mixer import music
 import json
-import os
+from os import makedirs, path
 #import model
 
 
@@ -239,7 +239,7 @@ class ToDo(QWidget):
             task_num = f'task{i + 1}'
             tasks[task_num] = {'name': name, 'level': level}
         if filename:
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            makedirs(path.dirname(filename), exist_ok=True)
             with open(filename, 'w+', encoding='utf-8') as f:
                 json.dump(tasks, f, ensure_ascii=False)
 
