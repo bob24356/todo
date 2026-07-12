@@ -398,7 +398,7 @@ class startDialog(QDialog):
         self.s_gird = QGridLayout()
         self.t_gird = QGridLayout()
         self.text = QLineEdit()
-        self.label = QLabel('重命名')
+        self.label = QLabel('名称')
         self.radio1 = QRadioButton("高等级")
         self.radio1.clicked.connect(lambda: self.choose("高等级"))
         self.radio2 = QRadioButton("中等级")
