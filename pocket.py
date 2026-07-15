@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (QLabel, QTreeWidget,
                                QGridLayout, QPushButton,
                                QLineEdit, QMessageBox, QTreeWidgetItem,
                                QMenu, QDialog, QRadioButton, QFileDialog,
-                               QSlider, QMainWindow, QWidget, QFrame)
+                               QSlider, QMainWindow, QWidget, QFrame, QCheckBox)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QAction
 from pygame.mixer import init
@@ -30,12 +30,14 @@ class ToDo(QMainWindow):
         self.bGrid = QGridLayout()
 
         self.listWindow = QTreeWidget()
-        self.listWindow.setColumnCount(2)
-        self.listWindow.setHeaderLabels(['名称', '优先级'])
-        self.listWindow.setColumnWidth(0, 350)
-        self.listWindow.setColumnWidth(1, 80)
+        self.listWindow.setColumnCount(3)
+        self.listWindow.setHeaderLabels(['名称', '优先级','完成情况'])
+        self.listWindow.setColumnWidth(0, 300)
+        self.listWindow.setColumnWidth(1, 100)
+        self.listWindow.setColumnWidth(2, 50)
         self.listWindow.setSelectionMode(QTreeWidget.MultiSelection)
         self.listWindow.setRootIsDecorated(False)
+        self.listWindow.itemChanged.connect(self.on_item_changed)
 
         self.label = QLabel('待办事项')
         self.label.setAlignment(Qt.AlignCenter)
@@ -86,6 +88,10 @@ class ToDo(QMainWindow):
         save_file.triggered.connect(self.save_everywhere)
         upload_m.triggered.connect(self.openmusic)
         showhelp.triggered.connect(self.show_help)
+        open_file.setShortcut("Ctrl+O")
+        save_file.setShortcut("Ctrl+S")
+        upload_m.setShortcut("Ctrl+M")
+        showhelp.setShortcut("Ctrl+H")
         fileMenu.addAction(open_file)
         fileMenu.addAction(save_file)
         musicMenu.addAction(upload_m)
@@ -113,21 +119,54 @@ class ToDo(QMainWindow):
         self.bGrid.addWidget(self.stopmPButton,7,0)
     #build variable
 
+    def get_priority_key(self, level_text):
+        if level_text == '高等级':
+            return 'high'
+        elif level_text == '中等级':
+            return 'mid'
+        elif level_text == '低等级':
+            return 'low'
+        return 'mid'
+    
+    def apply_completed_style(self, item, is_completed):
+        if is_completed:
+            item.setForeground(0, QColor('#888888'))
+            item.setForeground(1, QColor('#888888'))
+            item.setForeground(2, QColor('#888888'))
+            item.setBackground(0, QColor('#ffffff'))
+            item.setBackground(1, QColor('#ffffff'))
+            item.setBackground(2, QColor('#ffffff'))
+        else:
+            item.setForeground(0, QColor('#000000'))
+            item.setForeground(1, QColor('#000000'))
+            item.setForeground(2, QColor('#000000'))
+            level_text = item.text(1)
+            priority_key = self.get_priority_key(level_text)
+            color = QColor(self.PRIORITY_INFO[priority_key])
+            item.setBackground(0, color)
+            item.setBackground(1, color)
+            item.setBackground(2, color)
+
+    def on_item_changed(self, item, column):
+        if column == 0:
+            is_checked = item.checkState(0) == Qt.CheckState.Checked
+            item.setText(2, '已完成' if is_checked else '未完成')
+            self.apply_completed_style(item, is_checked)
+    
     def add_item(self):
         a = startDialog()
         if a.exec() == QDialog.Accepted:
             b = a.save()
             item = QTreeWidgetItem(self.listWindow)
-            if b[1] == '高等级':
-                self.status = 'high'
-            elif b[1] == '中等级':
-                self.status = 'mid'
-            elif b[1] == '低等级':
-                self.status = 'low'
-            item.setBackground(0, QColor(self.PRIORITY_INFO[self.status]))
-            item.setBackground(1, QColor(self.PRIORITY_INFO[self.status]))
+            priority_key = self.get_priority_key(b[1])
+            color = QColor(self.PRIORITY_INFO[priority_key])
+            item.setBackground(0, color)
+            item.setBackground(1, color)
             item.setText(0, b[0])
             item.setText(1, b[1])
+            item.setText(2, '未完成')
+            item.setCheckState(0, Qt.CheckState.Unchecked)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             self.listWindow.scrollToItem(item)
             self.sorted_()
     #add items
@@ -157,8 +196,9 @@ class ToDo(QMainWindow):
             item = self.listWindow.topLevelItem(i)
             name = item.text(0)
             level = item.text(1)
+            status = item.text(2)
             task_num = f'task{i + 1}'
-            tasks[task_num] = {'name': name, 'level': level}
+            tasks[task_num] = {'name': name, 'level': level, 'status': status}
         if filename:
             makedirs(path.dirname(filename), exist_ok=True)
             with open(filename, 'w+', encoding='utf-8') as f:
@@ -173,19 +213,20 @@ class ToDo(QMainWindow):
             for value in values_list:
                 name = value['name']
                 level = value['level']
-                if  level == '高等级':
-                    status = 'high'
-                elif level == '中等级':
-                    status = 'mid'
-                elif level == '低等级':
-                    status = 'low'
-                else:
-                    status = 'mid'
+                status = value['status']
+                priority_key = self.get_priority_key(level)
                 item = QTreeWidgetItem(self.listWindow)
-                item.setBackground(0, QColor(self.PRIORITY_INFO[status]))
-                item.setBackground(1, QColor(self.PRIORITY_INFO[status]))
+                color = QColor(self.PRIORITY_INFO[priority_key])
+                item.setBackground(0, color)
+                item.setBackground(1, color)
+                item.setBackground(2, color)
                 item.setText(0, name)
                 item.setText(1, level)
+                item.setText(2, status)
+                is_completed = (status == '已完成')
+                item.setCheckState(0, Qt.CheckState.Checked if is_completed else Qt.CheckState.Unchecked)
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                self.apply_completed_style(item, is_completed)
                 self.listWindow.scrollToItem(item)
         except FileNotFoundError:
             pass
@@ -197,8 +238,15 @@ class ToDo(QMainWindow):
     #save backup        
 
     def save_everywhere(self):
-        filename, _ = QFileDialog.getSaveFileName(self, '保存文件', '', "JSON文件 (*.json)")
-        self.save_model(filename)
+        try:
+            filename, _ = QFileDialog.getSaveFileName(self, '保存文件', '', "JSON文件 (*.json)")
+            self.save_model(filename)
+        except:
+            QMessageBox.information(
+                None,
+                "操作失败",
+                "无法保存"
+            )
     #custom save
 
 
@@ -219,27 +267,29 @@ class ToDo(QMainWindow):
             item = self.listWindow.topLevelItem(i)
             name = item.text(0)
             level = item.text(1)
+            status = item.text(2)
             if level not in priority_order:
                 level = "中等级"
-            tasks.append({'name': name, 'level': level})
-        tasks.sort(key=lambda x: priority_order[x['level']], reverse=True)
+            tasks.append({'name': name, 'level': level, 'status': status})
+        tasks.sort(key=lambda x: (priority_order[x['level']], 0 if x['status'] == '未完成' else 1), reverse=True)
         self.listWindow.clear()
         for task in tasks:
             name = task['name']
             level = task['level']
-            if level == '高等级':
-                status = 'high'
-            elif level == '中等级':
-                status = 'mid'
-            elif level == '低等级':
-                status = 'low'
-            else:
-                status = 'mid'
+            status = task['status']
+            priority_key = self.get_priority_key(level)
             item = QTreeWidgetItem(self.listWindow)
-            item.setBackground(0, QColor(self.PRIORITY_INFO[status]))
-            item.setBackground(1, QColor(self.PRIORITY_INFO[status]))
+            color = QColor(self.PRIORITY_INFO[priority_key])
+            item.setBackground(0, color)
+            item.setBackground(1, color)
+            item.setBackground(2, color)
             item.setText(0, name)
             item.setText(1, level)
+            item.setText(2, status)
+            is_completed = (status == '已完成')
+            item.setCheckState(0, Qt.CheckState.Checked if is_completed else Qt.CheckState.Unchecked)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            self.apply_completed_style(item, is_completed)
             self.listWindow.scrollToItem(item)
     #sort
 
@@ -259,11 +309,15 @@ class ToDo(QMainWindow):
     #show menus
 
     def open_edit(self,item):
-        a = editDialog(item.text(0), item.text(1))
+        a = editDialog(item.text(0), item.text(1), item.text(2)) 
         if a.exec() == QDialog.Accepted:
             b = a.save()
             item.setText(0, b[0])
             item.setText(1, b[1])
+            item.setText(2, b[2])
+            is_completed = (b[2] == '已完成')
+            self.apply_completed_style(item, is_completed)
+            item.setCheckState(0, Qt.CheckState.Checked if is_completed else Qt.CheckState.Unchecked)
             self.sorted_()
     #edit
 
@@ -331,10 +385,11 @@ class ToDo(QMainWindow):
 
     def closeEvent(self, event):
         self.save()
+        music.stop()
     #save backup
 
 class editDialog(QDialog):
-    def __init__(self, item_name, item_level):
+    def __init__(self, item_name, item_level, item_status='未完成'):
         super().__init__()
         self.setWindowTitle(f'编辑{item_name}')
         self.mainLayout = QGridLayout()
@@ -342,6 +397,7 @@ class editDialog(QDialog):
         self.f_gird = QGridLayout()
         self.s_gird = QGridLayout()
         self.t_gird = QGridLayout()
+        self.complete_gird = QGridLayout()
         self.text = QLineEdit(item_name)
         self.label = QLabel('重命名')
         self.radio1 = QRadioButton("高等级")
@@ -350,6 +406,8 @@ class editDialog(QDialog):
         self.radio2.clicked.connect(lambda: self.choose("中等级"))
         self.radio3 = QRadioButton("低等级")
         self.radio3.clicked.connect(lambda: self.choose("低等级"))
+        self.completed_check = QCheckBox('已完成')
+        self.completed_check.setChecked(item_status == '已完成')
         self.turePButton = QPushButton('确定')
         self.turePButton.clicked.connect(self.accept)
         self.falsePButton = QPushButton('取消')
@@ -367,7 +425,8 @@ class editDialog(QDialog):
     def build(self):
         self.mainLayout.addLayout(self.f_gird, 0, 0)
         self.mainLayout.addLayout(self.s_gird, 1, 0)
-        self.mainLayout.addLayout(self.t_gird, 2, 0)
+        self.mainLayout.addLayout(self.t_gird, 3, 0)
+        self.mainLayout.addLayout(self.complete_gird, 2, 0)
         self.f_gird.addWidget(self.label, 0, 0)
         self.f_gird.addWidget(self.text, 1, 0)
         self.s_gird.addWidget(self.radio1, 0, 0)
@@ -375,6 +434,7 @@ class editDialog(QDialog):
         self.s_gird.addWidget(self.radio3, 0, 2)
         self.t_gird.addWidget(self.turePButton, 0, 0)
         self.t_gird.addWidget(self.falsePButton, 0, 1)
+        self.complete_gird.addWidget(self.completed_check, 0, 0)
     #build variable
 
     def choose(self, name):
@@ -384,7 +444,8 @@ class editDialog(QDialog):
     def save(self):
         a = self.text.text()
         level = self.level
-        b = [a, level]
+        status = '已完成' if self.completed_check.isChecked() else '未完成'
+        b = [a, level, status]
         return b
     #save
 
@@ -410,12 +471,7 @@ class startDialog(QDialog):
         self.falsePButton = QPushButton('取消')
         self.falsePButton.clicked.connect(self.reject)
         self.level = "中等级"
-        if self.level == "高等级":
-            self.radio1.setChecked(True)
-        elif self.level == "中等级":
-            self.radio2.setChecked(True)
-        else:
-            self.radio3.setChecked(True)
+        self.radio2.setChecked(True)
         self.build()
         # define variable
 
